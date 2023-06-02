@@ -1,0 +1,13 @@
+gate_bundles:
+  - jammy
+
+dev_bundles:
+  - jammy
+
+smoke_bundles:
+  - jammy
+
+configure: []
+
+
+tests: []

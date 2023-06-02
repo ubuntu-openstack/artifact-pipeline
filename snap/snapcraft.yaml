@@ -1,0 +1,22 @@
+name: artifact-pipeline
+base: core22
+version: git
+summary: Automation tools and Temporal workflows for building debian packages.
+description: |
+  Automation tools and Temporal workflows for building debian packages.
+
+grade: stable
+confinement: strict
+
+apps:
+  artifact-pipeline:
+    command: bin/artifact-pipeline
+    plugs:
+      - network
+      - home
+      - password-manager-service  # to allow launchpadlib to store the token in the keyring.
+
+parts:
+  artifact-pipeline:
+    plugin: python
+    source: ./
