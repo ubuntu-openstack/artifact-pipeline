@@ -7,7 +7,12 @@ dev_bundles:
 smoke_bundles:
   - jammy
 
-configure: []
+configure:
+  - artifact_pipeline.zaza.setup.configure_ssl
 
 
 tests: []
+
+tests_options:
+  trust:
+    - jammy

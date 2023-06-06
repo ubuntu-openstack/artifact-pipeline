@@ -1,0 +1,28 @@
+applications:
+  postgresql-k8s:
+    charm: ch:postgresql-k8s
+    channel: 14/stable
+    trust: true
+  temporal-k8s:
+    charm: ch:temporal-k8s
+  temporal-admin-k8s:
+    charm: ch:temporal-admin-k8s
+  temporal-ui-k8s:
+    charm: ch:temporal-ui-k8s
+  nginx-ingress-integrator:
+    charm: ch:nginx-ingress-integrator
+
+
+relations:
+  - - temporal-k8s:db
+    - postgresql-k8s:db
+  - - temporal-k8s:visibility
+    - postgresql-k8s:db
+  - - temporal-k8s:admin
+    - temporal-admin-k8s:admin
+  - - temporal-k8s:ui
+    - temporal-ui-k8s:ui
+  - - temporal-ui-k8s
+    - nginx-ingress-integrator
+  - - temporal-k8s
+    - nginx-ingress-integrator
