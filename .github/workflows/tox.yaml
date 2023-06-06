@@ -5,7 +5,7 @@ on:
   - pull_request
 
 jobs:
-  build:
+  unit-tests:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -46,8 +46,8 @@ jobs:
           python -m pip install tox tox-gh-actions
       - name: Test with tox ${{ matrix.target }}
         run: tox -e ${{ matrix.target }}
-  func:
-    needs: [lint, build]
+  functional-tests:
+    needs: [lint, unit-tests]
     runs-on: ubuntu-latest
     strategy:
       matrix:
