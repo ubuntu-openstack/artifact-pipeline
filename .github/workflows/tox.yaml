@@ -46,3 +46,30 @@ jobs:
           python -m pip install tox tox-gh-actions
       - name: Test with tox ${{ matrix.target }}
         run: tox -e ${{ matrix.target }}
+  func:
+    needs: [lint, build]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version:
+          - '3.8'
+    steps:
+    - uses: actions/checkout@v1
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install tox tox-gh-actions
+        sudo snap install --channel 3.1 juju
+        sudo snap install --channel 1.27-strict microk8s
+        sudo usermod -a -G microk8s $USER
+        sudo microk8s.enable hostpath-storage
+        sudo microk8s.enable dns
+    - name: Juju Bootstrap
+      run: |
+        juju bootstrap microk8s micro
+    - name: Test with python ${{ matrix.python-version }}
+      run: tox -e func
