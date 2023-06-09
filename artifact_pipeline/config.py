@@ -1,5 +1,3 @@
-import logging
-
 from oslo_log import log
 
 import artifact_pipeline.conf

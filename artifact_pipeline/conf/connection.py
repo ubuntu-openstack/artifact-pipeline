@@ -1,12 +1,12 @@
 from oslo_config import cfg
 
 
-connection_group = cfg.OptGroup('connection',
+connection_group = cfg.OptGroup(
+    'connection',
     title='Temporal Server Connection options',
-    help="""
-Options under this group are used to define the connection details to a
-Temporal Server.
-""")
+    help="""Options under this group are used to define the connection details
+            to a Temporal Server.""",
+)
 
 opts = [
     cfg.StrOpt(
