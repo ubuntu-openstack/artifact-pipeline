@@ -14,11 +14,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+"""Logic for the hello-world workflow."""
 import argparse
 import asyncio
 import sys
 
 from datetime import timedelta
+from typing import (
+    List,
+    Optional,
+)
 
 from temporalio.client import Client
 from temporalio import workflow
@@ -39,20 +44,35 @@ TASK_QUEUE = "hello-task-queue"
 
 @workflow.defn
 class SayHello:
+    """Workflow definition."""
+
     @workflow.run
     async def run(self, name: str) -> str:
+        """Entry point when running this workflow.
+
+        :param name: Name to say hello to.
+        :returns: the formatted message returned by the worker.
+        """
         return await workflow.execute_activity(
             say_hello, name, start_to_close_timeout=timedelta(seconds=5)
         )
 
 
-def setup_opts(argv):
+def setup_opts(argv: Optional[List[str]]):
+    """Parse CLI arguments.
+
+    :param argv: list of arguments to parse
+    """
     parser = argparse.ArgumentParser()
-    parser.add_argument('--name')
-    return parser.parse_known_args()
+    parser.add_argument('--name', required=True, help="Name to say hello to.")
+    return parser.parse_known_args(argv)
 
 
-async def async_main(argv=None):
+async def async_main(argv: Optional[List[str]] = None):
+    """Async entry point for the hello world workflow.
+
+    :param argv: list of CLI arguments.
+    """
     if argv is None:
         argv = sys.argv
 
@@ -73,5 +93,9 @@ async def async_main(argv=None):
     print(f"Result: {result}")
 
 
-def main(argv=None):
+def main(argv: Optional[List[str]] = None):
+    """Entry point for the hello world workflow.
+
+    :param argv: list of CLI arguments.
+    """
     return asyncio.run(async_main())

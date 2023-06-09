@@ -14,9 +14,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+"""Logic for the hello-world related activities."""
+
 from temporalio import activity
 
 
 @activity.defn
 async def say_hello(name: str) -> str:
+    """Format the name argument into a 'Hello, %s' message.
+
+    :param name: name to say hello to.
+    :returns: a formatted message to say hello.
+    """
     return f"Hello, {name}!"

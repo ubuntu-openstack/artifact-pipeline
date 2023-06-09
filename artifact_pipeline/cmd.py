@@ -14,7 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+"""Placeholder for future entry points."""
 
 
 def main():
+    """Place holder function for future use."""
     print('hello main')

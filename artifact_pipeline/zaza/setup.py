@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+"""Setup functions for zaza based testing."""
 import os
 import subprocess
 import tempfile
@@ -24,6 +25,7 @@ from zaza.charm_lifecycle import utils as lifecycle_utils
 
 
 def configure_tls():
+    """Configure TLS in temporal server deployed by juju."""
     with tempfile.mkdtemp() as tmpdir:
         server_key = os.path.join(tmpdir, 'server.key')
         server_csr = os.path.join(tmpdir, 'server.csr')

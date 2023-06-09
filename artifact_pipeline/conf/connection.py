@@ -14,6 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+"""Connection to the Temporal server configuration schema."""
+
 from oslo_config import cfg
 
 
@@ -43,6 +45,10 @@ opts = [
 ]
 
 
-def register_opts(conf):
+def register_opts(conf: cfg.CONF):
+    """Register configuration options.
+
+    :param conf: configuration option manager.
+    """
     conf.register_group(connection_group)
     conf.register_opts(opts, group=connection_group)

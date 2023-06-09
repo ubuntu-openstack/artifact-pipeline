@@ -14,6 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+"""Configuration definition and parsing."""
+from typing import List
 from oslo_log import log
 
 import artifact_pipeline.conf
@@ -22,8 +24,13 @@ from artifact_pipeline import version
 CONF = artifact_pipeline.conf.CONF
 
 
-def parse_args(argv, default_config_files=None, configure_db=True,
-               init_rpc=True):
+def parse_args(argv: List[str],
+               default_config_files: str = None):
+    """Parse command line arguments to load the configuration.
+
+    :param argv: list of arguments to parse.
+    :param default_config_files: Path to a configuration file to use.
+    """
     log.register_options(CONF)
 
     CONF(argv[1:],
