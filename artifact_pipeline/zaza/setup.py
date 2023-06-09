@@ -2,6 +2,10 @@ import os
 import subprocess
 import tempfile
 
+import zaza.model
+
+from zaza.charm_lifecycle import utils as lifecycle_utils
+
 
 def configure_tls():
     with tempfile.mkdtemp() as tmpdir:
@@ -27,3 +31,22 @@ def configure_tls():
         subprocess.check_call(['microk8s.kubectl', 'create', 'secret', 'tls',
                                'temporal-tls', '--cert', server_crt,
                                '--key', server_key])
+        subprocess.check_call(
+            ['microk8s', 'enable',
+             'ingress:default-ssl-certificate=temporal/temporal-tls']
+        )
+
+        zaza.model.wait_for_agent_status()
+    test_config = lifecycle_utils.get_charm_config(fatal=False)
+    target_deploy_status = test_config.get('target_deploy_status', {})
+    try:
+        opts = {
+            'workload-status-message-prefix': '',
+            'workload-status': 'active',
+        }
+        target_deploy_status['temporal-ui-k8s'].update(opts)
+    except KeyError:
+        pass
+
+    zaza.model.wait_for_application_states(
+        states=target_deploy_status)
