@@ -16,3 +16,19 @@ tests: []
 tests_options:
   trust:
     - jammy
+target_deploy_status:
+  postgresql-k8s:
+    workload-status: active
+    workload-status-message: ''
+  temporal-admin-k8s:
+    workload-status: active
+    workload-status-message: ''
+  temporal-k8s:
+    workload-status: active
+    workload-status-message: ''
+  temporal-ui-k8s:
+    workload-status: blocked
+    workload-status-message: 'ui:temporal relation: server is not ready'
+  nginx-ingress-integrators:
+    workload-status: waiting
+    workload-status-message: 'Waiting for ingress IP availability'
