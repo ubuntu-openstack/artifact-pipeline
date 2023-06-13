@@ -3,4 +3,4 @@ oslo.log
 oslo.config
 git+https://salsa.debian.org/python-debian-team/python-debian.git@0.1.49#egg=python-debian
 git+https://github.com/freyes/dput-ng.git@v1.33#egg=dput
-https://git.launchpad.net/~ubuntu-cloud-archive/+git/cloud-archive-utils
+git+https://git.launchpad.net/~ubuntu-cloud-archive/+git/cloud-archive-utils
