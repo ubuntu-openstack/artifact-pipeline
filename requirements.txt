@@ -3,8 +3,4 @@ oslo.log
 oslo.config
 git+https://salsa.debian.org/python-debian-team/python-debian.git@0.1.49#egg=python-debian
 git+https://github.com/freyes/dput-ng.git@v1.33#egg=dput
-
-# to get this package run:
-# $ cd /tmp
-# $ bzr branch lp:cloud-archive-utils
--e file:///tmp/cloud-archive-utils#egg=cloud-archive-utils
+https://git.launchpad.net/~ubuntu-cloud-archive/+git/cloud-archive-utils
