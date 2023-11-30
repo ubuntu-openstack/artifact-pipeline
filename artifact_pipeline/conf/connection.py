@@ -20,8 +20,8 @@ from oslo_config import cfg
 
 
 connection_group = cfg.OptGroup(
-    'connection',
-    title='Temporal Server Connection options',
+    "connection",
+    title="Temporal Server Connection options",
     help="""Options under this group are used to define the connection details
             to a Temporal Server.""",
 )
@@ -40,7 +40,7 @@ opts = [
     cfg.StrOpt(
         "namespace",
         default="default",
-        help="Namespace to connect to in the Temporal server."
+        help="Namespace to connect to in the Temporal server.",
     ),
 ]
 

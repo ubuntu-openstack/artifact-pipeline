@@ -20,8 +20,8 @@ from oslo_config import cfg
 
 
 deb_group = cfg.OptGroup(
-    'deb',
-    title='Deb packaging options',
+    "deb",
+    title="Deb packaging options",
     help="""Options under this group are used to define the configuration
             options related to deb packaging.""",
 )
@@ -41,6 +41,11 @@ opts = [
         "DEB_BUILD_OPTIONS",
         default="nostrip",
         help="deb build options",
+    ),
+    cfg.StrOpt(
+        "signing_key",
+        default="",
+        help="The key to use for signing the package.",
     ),
 ]
 

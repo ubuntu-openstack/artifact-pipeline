@@ -19,4 +19,4 @@
 
 def main():
     """Place holder function for future use."""
-    print('hello main')
+    print("hello main")
