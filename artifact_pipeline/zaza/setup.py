@@ -19,9 +19,8 @@ import os
 import subprocess
 import tempfile
 
-import zaza.model
-
-from zaza.charm_lifecycle import utils as lifecycle_utils
+import zaza.model  # type: ignore
+from zaza.charm_lifecycle import utils as lifecycle_utils  # type: ignore
 
 
 def configure_tls():

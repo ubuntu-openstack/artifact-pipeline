@@ -1,4 +1,4 @@
-from oslo_config import cfg
+from oslo_config import cfg  # type: ignore
 
 from artifact_pipeline.conf import connection
 from artifact_pipeline.conf import deb

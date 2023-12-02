@@ -1,0 +1,8 @@
+#!/bin/bash
+set -ex
+juju run temporal-admin-k8s/0 tctl args='workflow terminate --workflow_id backport-o-matic-queens'
+juju run temporal-admin-k8s/0 tctl args='workflow terminate --workflow_id backport-o-matic-ussuri'
+juju run temporal-admin-k8s/0 tctl args='workflow terminate --workflow_id backport-o-matic-yoga'
+juju run temporal-admin-k8s/0 tctl args='workflow terminate --workflow_id backport-o-matic-antelope'
+juju run temporal-admin-k8s/0 tctl args='workflow terminate --workflow_id backport-o-matic-bobcat'
+juju run temporal-admin-k8s/0 tctl args='workflow terminate --workflow_id backport-o-matic-caracal'

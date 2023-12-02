@@ -1,0 +1,8 @@
+#!/bin/bash
+set -ex
+artifact-pipeline.backport-o-matic-workflow --config-file /etc/artifact-pipeline.conf --exclude-list debhelper pkgbinarymangler --os-series queens &
+artifact-pipeline.backport-o-matic-workflow --config-file /etc/artifact-pipeline.conf --exclude-list debhelper pkgbinarymangler meson --os-series ussuri &
+artifact-pipeline.backport-o-matic-workflow --config-file /etc/artifact-pipeline.conf --exclude-list python-tz --os-series yoga &
+artifact-pipeline.backport-o-matic-workflow --config-file /etc/artifact-pipeline.conf --os-series antelope &
+artifact-pipeline.backport-o-matic-workflow --config-file /etc/artifact-pipeline.conf --os-series bobcat &
+artifact-pipeline.backport-o-matic-workflow --config-file /etc/artifact-pipeline.conf --os-series caracal &

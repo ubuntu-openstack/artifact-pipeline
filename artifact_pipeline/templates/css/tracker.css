@@ -1,0 +1,129 @@
+@font-face {
+  font-family: 'Ubuntu';
+  font-style: normal;
+  font-weight: 300;
+  src: url("https://assets.ubuntu.com/v1/50afa266-ubuntu-l-webfont.woff2") format("woff2"), url("https://assets.ubuntu.com/v1/0194407b-ubuntu-l-webfont.woff") format("woff"); }
+
+@font-face {
+  font-family: 'Ubuntu';
+  font-style: normal;
+  font-weight: 400;
+  src: url("https://assets.ubuntu.com/v1/1cbafee5-ubuntu-r-webfont.woff2") format("woff2"), url("https://assets.ubuntu.com/v1/81863185-ubuntu-r-webfont.woff") format("woff"); }
+
+@font-face {
+  font-family: 'Ubuntu';
+  font-style: italic;
+  font-weight: 300;
+  src: url("https://assets.ubuntu.com/v1/abb07502-ubuntu-li-webfont.woff2") format("woff2"), url("https://assets.ubuntu.com/v1/65fc9630-ubuntu-li-webfont.woff") format("woff"); }
+
+@font-face {
+  font-family: 'Ubuntu';
+  font-style: italic;
+  font-weight: 400;
+  src: url("https://assets.ubuntu.com/v1/fca66073-ubuntu-ri-webfont.woff2") format("woff2"), url("https://assets.ubuntu.com/v1/f0898c72-ubuntu-ri-webfont.woff") format("woff"); }
+
+@font-face {
+  font-family: 'Ubuntu Mono';
+  font-style: normal;
+  font-weight: 300;
+  src: url("https://assets.ubuntu.com/v1/871f7456-ubuntumono-r-webfont.woff2") format("woff2"), url("https://assets.ubuntu.com/v1/8df3f408-ubuntumono-r-webfont.woff") format("woff"); }
+
+@font-face {
+  font-family: 'Ubuntu Mono';
+  font-style: normal;
+  font-weight: 400;
+  src: url("https://assets.ubuntu.com/v1/871f7456-ubuntumono-r-webfont.woff2") format("woff2"), url("https://assets.ubuntu.com/v1/8df3f408-ubuntumono-r-webfont.woff") format("woff"); }
+
+* {
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: antialiased;
+  font-smoothing: subpixel-antialiased; }
+
+body {
+    padding-top: 0;
+    font-family: "Ubuntu", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+    font-weight: 300
+}
+
+/* Overrides bootstrap */
+.uca-tracker-navbar {
+    background-color: #666666!important;
+}
+
+/* Overrides bootstrap */
+.navbar-brand, .nav-link {
+    font-weight: 400;
+}
+
+/* Overrides bootstrap */
+.btn {
+    background-color: #666666!important;
+}
+
+/* Overrides bootstrap */
+ul.style-none {
+    list-style: none;
+}
+
+div#footer {
+ width: 100%;
+ font-size: smaller;
+ padding: 1em;
+ text-align: center;
+}
+
+p.note {
+ font-size: smaller;
+ margin: 0.2em;
+}
+
+/* Overrides bootstrap */
+a:link {
+    color: #000000;
+    text-decoration: none
+}
+
+a:visited {
+    color: #000000;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* Overrides bootstrap */
+.table th {
+    padding: .5rem;
+}
+
+/* Overrides bootstrap */
+.table .thead-dark th {
+    background-color: #dd4814;
+}
+
+/* Overrides bootstrap */
+table#uca td {
+    padding: .10rem!important;
+    font-size: .85rem;
+}
+
+td.current {
+ background-color: #109d26;
+}
+
+td.outdated {
+ background-color: yellow;
+}
+
+td.failed {
+ background-color: orange;
+}
+
+td p {
+ padding: 0;
+ margin: 0;
+}
+
+.key {
+    font-size: 1.0rem;
+}
