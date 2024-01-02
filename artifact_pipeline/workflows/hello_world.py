@@ -17,8 +17,8 @@
 """Logic for the hello-world workflow."""
 import argparse
 import asyncio
+import logging
 import sys
-
 from datetime import timedelta
 from typing import (
     List,
@@ -32,7 +32,6 @@ import artifact_pipeline.conf
 
 # Import activity, passing it through the sandbox without reloading the module
 with workflow.unsafe.imports_passed_through():
-    from oslo_log import log as logging
     from artifact_pipeline import config
     from artifact_pipeline.activities.hello_world import say_hello
 

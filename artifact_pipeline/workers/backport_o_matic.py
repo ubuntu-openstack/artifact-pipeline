@@ -14,11 +14,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-"""Logic for the archive-backport worker daemon."""
+"""Logic for the backport-o-matic worker daemon."""
 import asyncio
 import logging
 import sys
-
 from typing import (
     List,
     Optional,
@@ -30,13 +29,21 @@ from temporalio.worker import Worker
 
 import artifact_pipeline.conf
 
-from artifact_pipeline.activities.archive_backport import (
+from artifact_pipeline.activities.backport_package import (
     prepare_package,
     build_package,
     sign_package,
     upload_package,
 )
-from artifact_pipeline.workflows import archive_backport
+from artifact_pipeline.activities.backport_o_matic import (
+    get_staging_packages,
+    get_outdated_packages,
+    render_css,
+    render_js,
+    render_html,
+    swift_publish,
+)
+from artifact_pipeline.workflows import backport_o_matic
 
 # Import activity, passing it through the sandbox without reloading the module
 with workflow.unsafe.imports_passed_through():
@@ -46,7 +53,7 @@ CONF = artifact_pipeline.conf.CONF
 
 
 async def async_main(argv: Optional[List[str]] = None):
-    """Async entry point for the archive-backport worker.
+    """Async entry point for the backport-o-matic worker.
 
     :param argv: list of CLI arguments.
     """
@@ -65,20 +72,26 @@ async def async_main(argv: Optional[List[str]] = None):
     # Run the worker
     worker = Worker(
         client,
-        task_queue=archive_backport.TASK_QUEUE,
-        workflows=[archive_backport.ArchiveBackport],
+        task_queue=backport_o_matic.TASK_QUEUE,
+        workflows=[backport_o_matic.BackportOMatic],
         activities=[
+            get_staging_packages,
+            get_outdated_packages,
             prepare_package,
             build_package,
             sign_package,
             upload_package,
+            render_css,
+            render_js,
+            render_html,
+            swift_publish,
         ],
     )
     await worker.run()
 
 
 def main(argv: Optional[List[str]] = None):
-    """Entry point for the archive-backport worker.
+    """Entry point for the backport-o-matic worker.
 
     :param argv: list of CLI arguments.
     """

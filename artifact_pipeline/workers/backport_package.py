@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-"""Logic for the hello-world worker daemon."""
+"""Logic for the backport-package worker daemon."""
 import asyncio
 import logging
 import sys
@@ -28,47 +28,55 @@ from temporalio.client import Client
 from temporalio.worker import Worker
 
 import artifact_pipeline.conf
-from artifact_pipeline.activities.hello_world import say_hello
-from artifact_pipeline.workflows.hello_world import (
-    SayHello,
-    TASK_QUEUE,
+from artifact_pipeline.activities.backport_package import (
+    prepare_package,
+    build_package,
+    sign_package,
+    upload_package,
 )
+from artifact_pipeline.workflows import backport_package
 
 # Import activity, passing it through the sandbox without reloading the module
 with workflow.unsafe.imports_passed_through():
     from artifact_pipeline import config
 
-
 CONF = artifact_pipeline.conf.CONF
-LOG = logging.getLogger(__name__)
 
 
 async def async_main(argv: Optional[List[str]] = None):
-    """Async entry point for the hello world worker.
+    """Async entry point for the backport-package worker.
 
     :param argv: list of CLI arguments.
     """
+    # Uncomment the line below to see logging
+    logging.basicConfig(level=logging.INFO)
+
     if argv is None:
         argv = sys.argv
 
     config.parse_args(argv)
     client = await Client.connect(
-        "%s:%d" % (CONF.connection.host, CONF.connection.port),
+        f"{CONF.connection.host}:{CONF.connection.port}",
         namespace=CONF.connection.namespace,
     )
 
     # Run the worker
     worker = Worker(
         client,
-        task_queue=TASK_QUEUE,
-        workflows=[SayHello],
-        activities=[say_hello],
+        task_queue=backport_package.TASK_QUEUE,
+        workflows=[backport_package.BackportPackage],
+        activities=[
+            prepare_package,
+            build_package,
+            sign_package,
+            upload_package,
+        ],
     )
     await worker.run()
 
 
 def main(argv: Optional[List[str]] = None):
-    """Entry point for the hello world worker.
+    """Entry point for the backport-package worker.
 
     :param argv: list of CLI arguments.
     """

@@ -16,7 +16,7 @@
 #
 """Configuration for deb packaging tools."""
 
-from oslo_config import cfg
+from oslo_config import cfg  # type: ignore
 
 
 deb_group = cfg.OptGroup(

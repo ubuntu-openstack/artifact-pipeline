@@ -16,7 +16,8 @@
 #
 """Configuration definition and parsing."""
 from typing import List
-from oslo_log import log
+
+from oslo_log import log  # type: ignore
 
 import artifact_pipeline.conf
 from artifact_pipeline import version

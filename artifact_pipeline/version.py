@@ -15,7 +15,7 @@
 # limitations under the License.
 #
 """Version of artifact-pipeline."""
-import pbr.version
+import pbr.version  # type: ignore
 
 
 version_info = pbr.version.VersionInfo("artifact-pipeline")

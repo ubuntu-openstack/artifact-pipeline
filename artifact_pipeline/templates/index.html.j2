@@ -1,0 +1,61 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+
+<title>Backport-o-Matic</title>
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="author" content="Canonical Ltd, Kees Cook, Jamie Strandboge, Corey Bryant" />
+<meta name="description" content="Backport-o-Matic" />
+<meta name="copyright" content="Canonical Ltd" />
+
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+<link rel="stylesheet" href="css/starter-template.css">
+<link rel="stylesheet" href="css/filter.css" type="text/css" />
+<link rel="stylesheet" href="css/tracker.css" type="text/css" />
+
+</head>
+
+<body>
+<nav class="navbar navbar-expand navbar-dark bg-dark navbar-fixed-top uca-tracker-navbar">
+    <a class="navbar-brand" href="index.html">Backport-o-Matic</a>
+    <div id="uca-tracker-navbar" class="collapse navbar-collapse">
+      <ul class="navbar-nav">
+{% for key, value in render_data['href_map'].items() %}
+        <li class="nav-item"><a class="{{ value['status'] }} nav-link" href="{{ value['href'] }}">{{ key }}</a></li>
+{% endfor %}
+      </ul>
+    </div>
+</nav>
+
+<div class="container-fluid" id="container">
+<div class="starter-template">
+<div class="card" id="body-card">
+<h3 class="card-header text-center">Home</h3>
+<div class="card-body">
+<h3 class="text-left">Introduction</h3>
+<p class="text-left">These reports provide backport-o-matic build status for the various releases of Canonical's Ubuntu Cloud Archive.</p>
+<p class="text-left">Where status can be one of the following:</p>
+<ul class="style-none text-left">
+    <li><b>current:</b> Package is up-to-date in staging PPA.</li>
+    <li><b>success:</b> Package built successfully. Click link to view build log.</li>
+    <li><b>failed:</b> Package failed to build. Click link to view build log.</li>
+</ul>
+
+<div id="footer">
+<p>&copy; Canonical Ltd. 2023</p>
+</div><!-- footer -->
+</div><!-- card-body -->
+</div><!-- card -->
+</div><!-- starter-template -->
+</div><!-- container -->
+ <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="./js/filter.js"></script>
+</body>
+</html>

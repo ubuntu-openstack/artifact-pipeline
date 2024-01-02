@@ -16,7 +16,7 @@
 #
 """Connection to the Temporal server configuration schema."""
 
-from oslo_config import cfg
+from oslo_config import cfg  # type: ignore
 
 
 connection_group = cfg.OptGroup(

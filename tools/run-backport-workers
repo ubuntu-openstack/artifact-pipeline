@@ -1,0 +1,4 @@
+#!/bin/bash
+set -ex
+artifact-pipeline.backport-package-worker --config-file /etc/artifact-pipeline.conf > backport-package-worker.log 2>&1 &
+artifact-pipeline.backport-o-matic-worker --config-file /etc/artifact-pipeline.conf > backport-o-matic-worker.log 2>&1 &
