@@ -21,88 +21,134 @@ import pathlib
 import sys
 
 from datetime import timedelta
-from typing import (
-    List,
-    Optional,
-    Tuple,
-    Union
-)
+from typing import Optional, Union
 
 from temporalio.client import Client
 from temporalio import workflow
 
 import artifact_pipeline.conf
+from artifact_pipeline import utils
 
 # Import activity, passing it through the sandbox without reloading the module
 with workflow.unsafe.imports_passed_through():
-    from oslo_log import log as logging
     from artifact_pipeline import config
     from artifact_pipeline.activities import archive_backport
 
 
 CONF = artifact_pipeline.conf.CONF
-LOG = logging.getLogger(__name__)
 TASK_QUEUE = "archive-backport"
 
 
-@workflow.defn
+@workflow.defn(sandboxed=False)
 class ArchiveBackport:
     """Workflow to describe a backport from the Ubuntu archive into a PPA."""
 
     @workflow.run
-    async def run(self,
-                  package_name: str,
-                  os_series: str,
-                  dstdir: Union[str, pathlib.Path],
-                  check_proposed: bool = True) -> Tuple[int, str, str]:
+    async def run(
+        self,
+        package_name: str,
+        os_series: str,
+        suffix: str,
+        work_dir: Union[str, pathlib.Path],
+        log_dir: Union[str, pathlib.Path],
+        check_proposed: bool = True,
+    ) -> tuple[int, str, str]:
         """Start the backporting process.
 
         :param package_name: Name of the package to backport.
         :param os_series: OpenStack series name.
-        :param dstdir: Path to the directory where to save the deb source
-                       package.
-        :param check_proposed: If true consider packages in the proposed pocket.
+        :param suffix: Package version suffix (ie. ~cloud0).
+        :param work_dir: Path to directory to store package build artifacts.
+        :param log_dir: Path to directory to store build log file.
+        :param check_proposed: If true, consider packages from proposed pocket.
         """
-        (returncode, stdout, stderr) =  await workflow.execute_activity(
-            archive_backport.cloud_archive_backport,
-            args=[package_name, os_series, dstdir, check_proposed],
-            start_to_close_timeout=timedelta(seconds=3600)
+        build = utils.BuildResult(package_name)
+
+        (cmd, retcode, output) = await workflow.execute_activity(
+            archive_backport.prepare_package,
+            args=[package_name, os_series, suffix, work_dir, check_proposed],
+            start_to_close_timeout=timedelta(seconds=3600),
         )
-        if returncode != 0:
-            return (returncode, stdout, stderr)
-        else:
-            LOG.debug('Successfully backported package')
+        build.update_build_result(cmd, retcode, output, work_dir)
 
-        (returncode, stdout, stderr) =  await workflow.execute_activity(
-            archive_backport.sbuild_package,
-            args=[package_name, os_series, dstdir],
-            start_to_close_timeout=timedelta(seconds=3600)
-        )
-        return (returncode, stdout, stderr)
+        if not retcode:
+            (cmd, retcode, output) = await workflow.execute_activity(
+                archive_backport.build_package,
+                args=[package_name, os_series, work_dir],
+                start_to_close_timeout=timedelta(seconds=3600),
+            )
+            build.update_build_result(cmd, retcode, output, work_dir)
+
+        if not retcode:
+            (cmd, retcode, output) = await workflow.execute_activity(
+                archive_backport.sign_package,
+                args=[package_name, work_dir],
+                start_to_close_timeout=timedelta(seconds=3600),
+            )
+            build.update_build_result(cmd, retcode, output, work_dir)
+
+        if not retcode:
+            (cmd, retcode, output) = await workflow.execute_activity(
+                archive_backport.upload_package,
+                args=[package_name, os_series, work_dir],
+                start_to_close_timeout=timedelta(seconds=3600),
+            )
+            build.update_build_result(cmd, retcode, output, work_dir)
+
+        log_file = build.write_build_result(log_dir)
+
+        return (retcode, log_file)
 
 
-def setup_opts(argv: Optional[List[str]]):
+def setup_opts(argv: Optional[list[str]]):
     """Parse CLI arguments.
 
     :param argv: list of arguments to parse
     """
     parser = argparse.ArgumentParser()
-    parser.add_argument('--package',
-                        dest='package_name',
-                        required=True,
-                        help="Name of the package to backport.")
-    parser.add_argument('--os-series',
-                        required=True,
-                        help="Cloud Archive OpenStack release to backport to.")
-    parser.add_argument('-d', '--dstdir', dest='dstdir', default='./',
-                        help='Directory to save the source package.')
-    parser.add_argument('-P', '--proposed', dest='check_proposed',
-                        action='store_true', help='Check proposed pocket')
+    parser.add_argument(
+        "--package",
+        dest="package_name",
+        required=True,
+        help="Name of the package to backport.",
+    )
+    parser.add_argument(
+        "--os-series",
+        required=True,
+        help="Cloud Archive OpenStack release to backport to.",
+    )
+    parser.add_argument(
+        "--suffix",
+        dest="suffix",
+        default="~cloud0",
+        help="Package version suffix.",
+    )
+    parser.add_argument(
+        "-w",
+        "--work-dir",
+        dest="work_dir",
+        default="./",
+        help="Directory to store package build artifacts.",
+    )
+    parser.add_argument(
+        "-l",
+        "--log-dir",
+        dest="log_dir",
+        default="./",
+        help="Directory to store build log file.",
+    )
+    parser.add_argument(
+        "-P",
+        "--proposed",
+        dest="check_proposed",
+        action="store_true",
+        help="Check proposed pocket",
+    )
     return parser.parse_known_args(argv)
 
 
-async def async_main(argv: Optional[List[str]] = None):
-    """Async entry point for the archive backport workflow.
+async def async_main(argv: Optional[list[str]] = None):
+    """Async entry point for the archive-backport workflow.
 
     :param argv: list of CLI arguments.
     """
@@ -114,29 +160,34 @@ async def async_main(argv: Optional[List[str]] = None):
 
     # Create client connected to server at the given address
     client = await Client.connect(
-        "%s:%d" % (CONF.connection.host, CONF.connection.port),
+        f"{CONF.connection.host}:{CONF.connection.port}",
         namespace=CONF.connection.namespace,
     )
 
     # Execute a workflow
-    workflow_id = "archive-backport-{os_series}-{package}".format(
-        os_series=options.os_series, package=options.package_name
+    workflow_id = (
+        f"archive-backport-{options.os_series}-{options.package_name}"
     )
-    result = await client.execute_workflow(
+    retcode, log_file = await client.execute_workflow(
         ArchiveBackport.run,
-        args=[options.package_name,
-        options.os_series,
-        options.dstdir,
-        options.check_proposed],
+        args=[
+            options.package_name,
+            options.os_series,
+            options.suffix,
+            options.work_dir,
+            options.log_dir,
+            options.check_proposed,
+        ],
         id=workflow_id,
-        task_queue=TASK_QUEUE
+        task_queue=TASK_QUEUE,
     )
 
-    print(f"Result: {result}")
+    print(f"Result: {'Failure' if retcode else 'Success'}")
+    print(f"Build Log: {log_file}")
 
 
-def main(argv: Optional[List[str]] = None):
-    """Entry point for the hello world workflow.
+def main(argv: Optional[list[str]] = None):
+    """Entry point for the archive-backport workflow.
 
     :param argv: list of CLI arguments.
     """

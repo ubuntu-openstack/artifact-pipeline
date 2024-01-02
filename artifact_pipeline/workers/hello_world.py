@@ -64,7 +64,7 @@ async def async_main(argv: Optional[List[str]] = None):
         client,
         task_queue=TASK_QUEUE,
         workflows=[SayHello],
-        activities=[say_hello]
+        activities=[say_hello],
     )
     await worker.run()
 

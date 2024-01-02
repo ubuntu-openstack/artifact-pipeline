@@ -1,3 +1,5 @@
+Jinja2
+launchpadlib
 temporalio
 oslo.log
 oslo.config

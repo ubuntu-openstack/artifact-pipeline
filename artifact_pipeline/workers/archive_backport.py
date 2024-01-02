@@ -14,8 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-"""Logic for the hello-world worker daemon."""
+"""Logic for the archive-backport worker daemon."""
 import asyncio
+import logging
 import sys
 
 from typing import (
@@ -30,33 +31,34 @@ from temporalio.worker import Worker
 import artifact_pipeline.conf
 
 from artifact_pipeline.activities.archive_backport import (
-    cloud_archive_backport,
-    sbuild_package,
+    prepare_package,
+    build_package,
+    sign_package,
+    upload_package,
 )
 from artifact_pipeline.workflows import archive_backport
 
 # Import activity, passing it through the sandbox without reloading the module
 with workflow.unsafe.imports_passed_through():
-    from oslo_log import log as logging
     from artifact_pipeline import config
 
-
 CONF = artifact_pipeline.conf.CONF
-LOG = logging.getLogger(__name__)
 
 
 async def async_main(argv: Optional[List[str]] = None):
-    """Async entry point for the archive backport worker.
+    """Async entry point for the archive-backport worker.
 
     :param argv: list of CLI arguments.
     """
+    # Uncomment the line below to see logging
+    logging.basicConfig(level=logging.INFO)
+
     if argv is None:
         argv = sys.argv
 
     config.parse_args(argv)
-    logging.setup(CONF, "artifact-pipeline")
     client = await Client.connect(
-        "%s:%d" % (CONF.connection.host, CONF.connection.port),
+        f"{CONF.connection.host}:{CONF.connection.port}",
         namespace=CONF.connection.namespace,
     )
 
@@ -65,14 +67,18 @@ async def async_main(argv: Optional[List[str]] = None):
         client,
         task_queue=archive_backport.TASK_QUEUE,
         workflows=[archive_backport.ArchiveBackport],
-        activities=[cloud_archive_backport,
-                    sbuild_package]
+        activities=[
+            prepare_package,
+            build_package,
+            sign_package,
+            upload_package,
+        ],
     )
     await worker.run()
 
 
 def main(argv: Optional[List[str]] = None):
-    """Entry point for the hello world worker.
+    """Entry point for the archive-backport worker.
 
     :param argv: list of CLI arguments.
     """

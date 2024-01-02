@@ -24,8 +24,7 @@ from artifact_pipeline import version
 CONF = artifact_pipeline.conf.CONF
 
 
-def parse_args(argv: List[str],
-               default_config_files: str = None):
+def parse_args(argv: List[str], default_config_files: str = None):
     """Parse command line arguments to load the configuration.
 
     :param argv: list of arguments to parse.
@@ -33,7 +32,9 @@ def parse_args(argv: List[str],
     """
     log.register_options(CONF)
 
-    CONF(argv[1:],
-         project='artifact-pipeline',
-         version=version.version_string(),
-         default_config_files=default_config_files)
+    CONF(
+        argv[1:],
+        project="artifact-pipeline",
+        version=version.version_string(),
+        default_config_files=default_config_files,
+    )

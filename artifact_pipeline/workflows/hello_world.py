@@ -64,7 +64,7 @@ def setup_opts(argv: Optional[List[str]]):
     :param argv: list of arguments to parse
     """
     parser = argparse.ArgumentParser()
-    parser.add_argument('--name', required=True, help="Name to say hello to.")
+    parser.add_argument("--name", required=True, help="Name to say hello to.")
     return parser.parse_known_args(argv)
 
 

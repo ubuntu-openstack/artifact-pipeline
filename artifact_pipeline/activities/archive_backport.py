@@ -14,103 +14,129 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-"""Logic for the hello-world related activities."""
-import asyncio
+"""Logic for the archive-backport related activities."""
+from glob import glob
 import os
 import pathlib
 
 from typing import (
-    Tuple,
     Union,
 )
 from temporalio import activity
-from temporalio import workflow
 
 import artifact_pipeline.conf
+from artifact_pipeline import utils
 
-
-with workflow.unsafe.imports_passed_through():
-    from oslo_log import log as logging
-
-
-LOG = logging.getLogger(__name__)
 CONF = artifact_pipeline.conf.CONF
 
 
 @activity.defn
-async def cloud_archive_backport(package_name: str,
-                                 os_series: str,
-                                 dstdir: Union[str, pathlib.Path],
-                                 check_proposed: bool = True) -> Tuple[int, str, str]:
+async def prepare_package(
+    package_name: str,
+    os_series: str,
+    suffix: str,
+    work_dir: Union[str, pathlib.Path],
+    check_proposed: bool = True,
+) -> tuple[list[str], int, str]:
     """Backport a package (by name) from the Ubuntu archive to UCA.
 
     :param package_name: Name of the package to backport.
     :param os_series: OpenStack series name.
-    :param dstdir: Path to the directory where to save the deb source package.
+    :param suffix: Package version suffix (ie. ~cloud0).
+    :param work_dir: Directory where package build artifacts are stored.
     :param check_proposed: If true consider packages in the proposed pocket.
     """
-    LOG.warn('dstdir: %s, type: %s', dstdir, type(dstdir))
-    if not os.path.isdir(dstdir):
-        LOG.info('Destination directory does not exist, creating it.')
-        os.mkdir(dstdir)
+    activity.logger.info(f"Work directory: {work_dir}")
+    if not os.path.isdir(work_dir):
+        activity.logger.info("Work directory does not exist, creating it.")
+        os.mkdir(work_dir)
 
-    cmd = ['cloud-archive-backport', '-y', '-r', os_series, '-o', str(dstdir)]
+    cmd = [
+        "cloud-archive-backport",
+        "--suffix",
+        f"{suffix}",
+        "--yes",
+        "--release",
+        os_series,
+        "--outdir",
+        str(work_dir),
+        package_name,
+    ]
     if check_proposed:
-        cmd.append('-P')
-
+        cmd.append("--proposed")
     cmd.append(package_name)
-    LOG.warn('cmd: %s', cmd)
-    proc = await asyncio.create_subprocess_exec(
-        *cmd,
-        stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE,
-        env={"DEBEMAIL": CONF.deb.DEBEMAIL,
-             "DEBFULLNAME": CONF.deb.DEBFULLNAME},
-    )
-    stdout = b''
-    while proc.returncode is None:
-        line = await proc.stdout.readline()
-        if line:
-            stdout += line
-            LOG.debug("%s", line.decode('utf-8'))
-        if proc.stdout.at_eof():
-            break
 
-    _stdout, stderr = await proc.communicate()
+    env = {"DEBEMAIL": CONF.deb.DEBEMAIL, "DEBFULLNAME": CONF.deb.DEBFULLNAME}
 
-    return (proc.returncode, stdout.decode('utf-8'), stderr.decode('utf-8'))
+    returncode, output = await utils.asyncio_create_subprocess_exec(cmd, env)
+
+    return (cmd, returncode, output)
 
 
 @activity.defn
-async def sbuild_package(package_name: str,
-                         os_series: str,
-                         dstdir: Union[str, pathlib.Path]) -> Tuple[int, str, str]:
+async def build_package(
+    package_name: str, os_series: str, work_dir: Union[str, pathlib.Path]
+) -> tuple[list[str], int, str]:
     """Backport a package (by name) from the Ubuntu archive to UCA.
 
-    :param package_name: Name of the package to backport.
+    :param package_name: Name of the package to build.
     :param os_series: OpenStack series name.
-    :param dstdir: Path to the directory where to save the deb source package.
+    :param work_dir: Directory where package build artifacts are stored.
     """
-    cmd = ['sbuild-%s' % os_series, '-n', '-A',
-           "{package_name}*/{package_name}_*.dsc".format(package_name=package_name)]
-    LOG.warn('cmd: %s', cmd)
-    proc = await asyncio.create_subprocess_exec(
-        *cmd,
-        stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE,
-        env={"DEBEMAIL": CONF.deb.DEBEMAIL,
-             "DEBFULLNAME": CONF.deb.DEBFULLNAME,
-             "DEB_BUILD_OPTIONS": CONF.deb.DEB_BUILD_OPTIONS},
+    dsc_file = glob(
+        os.path.join(work_dir, f"{package_name}*", f"{package_name}_*.dsc")
     )
-    stdout = b''
-    while proc.returncode is None:
-        line = await proc.stdout.readline()
-        if line:
-            stdout += line
-            LOG.debug("%s", line.decode('utf-8'))
-        if proc.stdout.at_eof():
-            break
+    cmd = [f"sbuild-{os_series}", "--nolog", "--arch-all", dsc_file[0]]
 
-    _stdout, stderr = await proc.communicate()
+    env = {
+        "DEBEMAIL": CONF.deb.DEBEMAIL,
+        "DEBFULLNAME": CONF.deb.DEBFULLNAME,
+        "DEB_BUILD_OPTIONS": CONF.deb.DEB_BUILD_OPTIONS,
+    }
 
-    return (proc.returncode, stdout.decode('utf-8'), stderr.decode('utf-8'))
+    returncode, output = await utils.asyncio_create_subprocess_exec(cmd, env)
+
+    return (cmd, returncode, output)
+
+
+@activity.defn
+async def sign_package(
+    package_name, work_dir: Union[str, pathlib.Path]
+) -> tuple[list[str], int, str]:
+    """Sign a package changes file.
+
+    :param package_name: Name of the package.
+    :param work_dir: Directory where package build artifacts are stored.
+    """
+    changes_file = glob(
+        os.path.join(
+            work_dir, f"{package_name}*", f"{package_name}_*_source.changes"
+        )
+    )
+    signing_key = CONF.deb.signing_key
+    cmd = ["debsign", f"-k{signing_key}", changes_file[0]]
+    returncode, output = await utils.asyncio_create_subprocess_exec(cmd)
+
+    return (cmd, returncode, output)
+
+
+@activity.defn
+async def upload_package(
+    package_name: str, os_series: str, work_dir: Union[str, pathlib.Path]
+) -> tuple[list[str], int, str]:
+    """Sign a package changes file.
+
+    :param package_name: Name of the package.
+    :param os_series: OpenStack series name.
+    :param work_dir: Directory where package build artifacts are stored.
+    """
+    staging_ppa = f"ppa:ubuntu-cloud-archive/{os_series}-staging"
+    changes_file = glob(
+        os.path.join(
+            work_dir, f"{package_name}*", f"{package_name}_*_source.changes"
+        )
+    )
+    cmd = ["dput", "--force", staging_ppa, changes_file[0]]
+    returncode, output = await utils.asyncio_create_subprocess_exec(cmd)
+
+    return (cmd, returncode, output)
