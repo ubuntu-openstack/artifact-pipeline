@@ -1,29 +1,42 @@
-name: Snapcraft
+## :: Collecting dput (from artifact-pipeline==0.0.1.dev25)
+## ::   Downloading dput-1.6.tar.gz (39 kB)
+## ::   Preparing metadata (setup.py): started
+## ::   Preparing metadata (setup.py): finished with status 'error'
+## ::   error: subprocess-exited-with-error
+## ::
+## ::   × python setup.py egg_info did not run successfully.
+## ::   │ exit code: 1
+## ::   ╰─> [3 lines of output]
+## ::       error in dput setup command: 'install_requires' must be a string or list of strings containing valid project/version requirement specifiers; Expected end or semicolon (after version specifier)
+## ::           python-debian==0.1.21-nmu2
+## ::                        ~~~~~~~~^
+## ::       [end of output]
+# name: Snapcraft
 
-on:
-  push:
-    branches:
-      - main
-  pull_request:
+# on:
+#   push:
+#     branches:
+#       - main
+#   pull_request:
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v2
-    - uses: snapcore/action-build@v1
-      id: build
-    - id: run-help
-      run: |
-        sudo snap install --dangerous ${{ steps.build.outputs.snap }}
-        artifact-pipeline --help
-    ## Disabled until there is a token configured and the snap name is
-    ## registered.
-    # - id: publish
-    #   if: github.ref == 'refs/heads/main'
-    #   uses: snapcore/action-publish@v1
-    #   with:
-    #     # See: https://github.com/snapcore/action-publish#store-login
-    #     store_login: ${{ secrets.STORE_LOGIN }}
-    #     snap: ${{ steps.build.outputs.snap }}
-    #     release: edge
+# jobs:
+#   build:
+#     runs-on: ubuntu-latest
+#     steps:
+#     - uses: actions/checkout@v2
+#     - uses: snapcore/action-build@v1
+#       id: build
+#     - id: run-help
+#       run: |
+#         sudo snap install --dangerous ${{ steps.build.outputs.snap }}
+#         artifact-pipeline --help
+#     ## Disabled until there is a token configured and the snap name is
+#     ## registered.
+#     # - id: publish
+#     #   if: github.ref == 'refs/heads/main'
+#     #   uses: snapcore/action-publish@v1
+#     #   with:
+#     #     # See: https://github.com/snapcore/action-publish#store-login
+#     #     store_login: ${{ secrets.STORE_LOGIN }}
+#     #     snap: ${{ steps.build.outputs.snap }}
+#     #     release: edge
