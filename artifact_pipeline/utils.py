@@ -18,7 +18,9 @@
 import asyncio
 import jinja2
 import os
+
 from glob import glob
+from typing import Optional
 
 from temporalio import activity
 
@@ -38,7 +40,7 @@ class BuildResult:
     """Store the build results for a package build."""
 
     def __init__(
-        self, package: str, version: str = "", status: str = "current"
+            self, package: str, version: str = "", status: str = "current"
     ):
         self.package = package
         self.version = version
@@ -47,7 +49,11 @@ class BuildResult:
         self.logfile = ""
 
     def update_build_result(
-        self, cmd: list[str], retcode: int, output: str, work_dir: str
+            self,
+            cmd: list[str],
+            retcode: Optional[int],
+            output: str,
+            work_dir: str,
     ):
         """Update the build results for a package build.
 
@@ -65,7 +71,7 @@ class BuildResult:
                     os.path.join(f"{work_dir}", f"{self.package}-")
                 )[1]
 
-        if retcode:
+        if retcode is None or retcode > 0:
             self.status = "failed"
 
         if output:
