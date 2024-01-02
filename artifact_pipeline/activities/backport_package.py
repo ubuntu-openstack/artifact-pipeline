@@ -18,7 +18,7 @@
 import os
 import pathlib
 from glob import glob
-from typing import Union
+from typing import Optional, Union
 
 from temporalio import activity
 
@@ -35,7 +35,7 @@ async def prepare_package(
     suffix: str,
     work_dir: Union[str, pathlib.Path],
     check_proposed: bool = True,
-) -> tuple[list[str], int, str]:
+) -> tuple[list[str], Optional[int], str]:
     """Backport a package (by name) from the Ubuntu archive to UCA.
 
     :param package_name: Name of the package to backport.
@@ -70,7 +70,7 @@ async def prepare_package(
 @activity.defn
 async def build_package(
     package_name: str, os_series: str, work_dir: Union[str, pathlib.Path]
-) -> tuple[list[str], int, str]:
+) -> tuple[list[str], Optional[int], str]:
     """Backport a package (by name) from the Ubuntu archive to UCA.
 
     :param package_name: Name of the package to build.
@@ -104,7 +104,7 @@ async def build_package(
 @activity.defn
 async def sign_package(
     package_name, work_dir: Union[str, pathlib.Path]
-) -> tuple[list[str], int, str]:
+) -> tuple[list[str], Optional[int], str]:
     """Sign a package changes file.
 
     :param package_name: Name of the package.
@@ -131,7 +131,7 @@ async def sign_package(
 @activity.defn
 async def upload_package(
     package_name: str, os_series: str, work_dir: Union[str, pathlib.Path]
-) -> tuple[list[str], int, str]:
+) -> tuple[list[str], Optional[int], str]:
     """Sign a package changes file.
 
     :param package_name: Name of the package.

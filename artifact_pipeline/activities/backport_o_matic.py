@@ -18,6 +18,7 @@
 import datetime
 import pickle
 from collections import OrderedDict
+from typing import Optional
 
 from launchpadlib.launchpad import Launchpad  # type: ignore
 from temporalio import activity
@@ -28,7 +29,7 @@ from artifact_pipeline import utils
 @activity.defn
 async def get_outdated_packages(
     os_series: str,
-) -> tuple[list[str], int, str]:
+) -> tuple[list[str], Optional[int], str]:
     """Get outdated cloud-archive packages.
 
     :param os_series: OpenStack series name.
@@ -164,14 +165,16 @@ async def render_html(
 
 
 @activity.defn
-async def swift_publish(novarc: str, path: str, header: str = "") -> int:
+async def swift_publish(
+        novarc: str, path: str, header: str = ""
+) -> Optional[int]:
     """Publish to swift.
 
     :param novarc: OpenStack credentials file name.
     :param path: Path to publish to swift.
     :param header: Header type to publish with.
     """
-    returncode = 0
+    returncode: Optional[int] = 0
     env = utils.os_auth_env(novarc)
 
     activity.logger.info("Publishing to swift")

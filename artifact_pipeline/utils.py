@@ -104,7 +104,7 @@ class BuildResult:
 
 async def asyncio_create_subprocess_exec(
     cmd: list[str], redirect_stderr: bool = True, env: dict[str, str] = {}
-) -> tuple[int, str]:
+) -> tuple[Optional[int], str]:
     """Run command with asyncio.create_subprocess_exec.
 
     :param cmd: Command to run.

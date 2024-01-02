@@ -50,7 +50,7 @@ class BackportPackage:
         suffix: str,
         work_dir: str,
         check_proposed: bool = True,
-    ) -> tuple[int, str]:
+    ) -> tuple[Optional[int], str]:
         """Start the backporting process.
 
         :param package_name: Name of the package to backport.
